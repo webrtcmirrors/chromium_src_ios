@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/feature_engagement_tracker/feature_engagement_tracker_factory.h"
+#include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
-#include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -26,29 +26,28 @@ const base::FilePath::CharType kIOSFeatureEngagementTrackerStorageDirname[] =
 
 }  // namespace
 
+namespace feature_engagement {
+
 // static
-FeatureEngagementTrackerFactory*
-FeatureEngagementTrackerFactory::GetInstance() {
-  return base::Singleton<FeatureEngagementTrackerFactory>::get();
+TrackerFactory* TrackerFactory::GetInstance() {
+  return base::Singleton<TrackerFactory>::get();
 }
 
 // static
-feature_engagement_tracker::FeatureEngagementTracker*
-FeatureEngagementTrackerFactory::GetForBrowserState(
+feature_engagement::Tracker* TrackerFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<feature_engagement_tracker::FeatureEngagementTracker*>(
+  return static_cast<feature_engagement::Tracker*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
-FeatureEngagementTrackerFactory::FeatureEngagementTrackerFactory()
+TrackerFactory::TrackerFactory()
     : BrowserStateKeyedServiceFactory(
-          "FeatureEngagementTracker",
+          "feature_engagement::Tracker",
           BrowserStateDependencyManager::GetInstance()) {}
 
-FeatureEngagementTrackerFactory::~FeatureEngagementTrackerFactory() = default;
+TrackerFactory::~TrackerFactory() = default;
 
-std::unique_ptr<KeyedService>
-FeatureEngagementTrackerFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> TrackerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
@@ -61,14 +60,15 @@ FeatureEngagementTrackerFactory::BuildServiceInstanceFor(
       kIOSFeatureEngagementTrackerStorageDirname);
 
   return base::WrapUnique(
-      feature_engagement_tracker::FeatureEngagementTracker::Create(
-          storage_dir, background_task_runner));
+      feature_engagement::Tracker::Create(storage_dir, background_task_runner));
 }
 
 // Finds which browser state to use. If |context| is an incognito browser
 // state, it returns the non-incognito state. Thus, feature engagement events
 // are tracked even in incognito tabs.
-web::BrowserState* FeatureEngagementTrackerFactory::GetBrowserStateToUse(
+web::BrowserState* TrackerFactory::GetBrowserStateToUse(
     web::BrowserState* context) const {
   return GetBrowserStateRedirectedInIncognito(context);
 }
+
+}  // namespace feature_engagement
