@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_IOS_H_
-#define IOS_CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_IOS_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_AUTOFILL_WEB_VIEW_AUTOFILL_CLIENT_IOS_H_
+#define IOS_WEB_VIEW_INTERNAL_AUTOFILL_WEB_VIEW_AUTOFILL_CLIENT_IOS_H_
 
 #include <memory>
 #include <string>
@@ -14,32 +14,28 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
-#include "components/infobars/core/infobar_manager.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "google_apis/gaia/identity_provider.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 
 namespace autofill {
 
-// Chrome iOS implementation of AutofillClient.
-class ChromeAutofillClientIOS : public AutofillClient {
+// WebView implementation of AutofillClient.
+class WebViewAutofillClientIOS : public AutofillClient {
  public:
-  ChromeAutofillClientIOS(
-      ios::ChromeBrowserState* browser_state,
+  WebViewAutofillClientIOS(
+      PrefService* pref_service,
+      PersonalDataManager* personal_data_manager,
       web::WebState* web_state,
-      infobars::InfoBarManager* infobar_manager,
       id<AutofillClientIOSBridge> bridge,
-      password_manager::PasswordGenerationManager* password_generation_manager,
-      std::unique_ptr<IdentityProvider> identity_provider);
-  ~ChromeAutofillClientIOS() override;
+      std::unique_ptr<IdentityProvider> identity_provider,
+      scoped_refptr<AutofillWebDataService> autofill_web_data_service);
+  ~WebViewAutofillClientIOS() override;
 
-  // AutofillClientIOS implementation.
+  // AutofillClient implementation.
   PersonalDataManager* GetPersonalDataManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
@@ -94,13 +90,10 @@ class ChromeAutofillClientIOS : public AutofillClient {
   __weak id<AutofillClientIOSBridge> bridge_;
   std::unique_ptr<IdentityProvider> identity_provider_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
-  infobars::InfoBarManager* infobar_manager_;
-  password_manager::PasswordGenerationManager* password_generation_manager_;
-  CardUnmaskPromptControllerImpl unmask_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClientIOS);
+  DISALLOW_COPY_AND_ASSIGN(WebViewAutofillClientIOS);
 };
 
 }  // namespace autofill
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_CHROME_AUTOFILL_CLIENT_IOS_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_AUTOFILL_WEB_VIEW_AUTOFILL_CLIENT_IOS_H_
